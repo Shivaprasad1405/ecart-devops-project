@@ -17,7 +17,7 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_security_group" "jenkins_sg" {
 
-  name        = "jenkins-security-group"
+  name = "jenkins-security-group"
 
   description = "Allow SSH, HTTP, Jenkins and Flask"
 
@@ -69,6 +69,30 @@ resource "aws_security_group" "jenkins_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "Kubernetes API Server"
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "NodePort Services"
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
 
     from_port = 0
@@ -94,7 +118,7 @@ resource "aws_instance" "jenkins_server" {
   ami = data.aws_ami.ubuntu.id
 
   instance_type = var.instance_type
-  key_name = "jenkins-key-pair"
+  key_name      = "jenkins-key-pair"
 
   associate_public_ip_address = true
 
@@ -110,4 +134,22 @@ resource "aws_instance" "jenkins_server" {
 
   }
 
+}
+
+resource "aws_instance" "k3s_server" {
+
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.instance_type
+
+  key_name = "jenkins-key-pair"
+
+  associate_public_ip_address = true
+
+  vpc_security_group_ids = [
+    aws_security_group.jenkins_sg.id
+  ]
+
+  tags = {
+    Name = "k3s-server"
+  }
 }

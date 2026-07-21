@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: ecart-app
+  namespace: ecart
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: ecart
+
+  template:
+    metadata:
+      labels:
+        app: ecart
+
+    spec:
+      containers:
+      - name: ecart-app
+        image: shivaprasadgowda/ecart-app:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 5000
